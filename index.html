@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      #terrain {
+        width: 1000px;
+        border-top: solid 1px #80B080;
+        border-left: solid 1px #80B080;
+        -webkit-background-clip: padding-box; /* for Safari */
+        background-clip: padding-box; /* for IE9+, Firefox 4+, Opera, Chrome */
+      }
+      #terrain div {
+        display: flex;
+        padding: 0;
+        margin: 0;
+        text-align: center;
+      }
+      #terrain div div {
+        min-width: 20px;
+        min-height: 20px;
+        max-width: 20px;
+        max-height: 20px;
+        align-items: center;
+        justify-content: center;
+        border-right: solid 1px #80B080;
+        border-bottom: solid 1px #80B080;
+        background-image: url(grass05.png);
+      }
+      #terrain div div:hover {
+        cursor: default;
+        background-color: orange;
+      }
+      #terrain div div.me:after {
+        z-index: 10;
+      }
+      #terrain div div.me:after {
+        content: '\01F482';
+      }
+    </style>
+    <script defer="defer">
+      var World = World || {
+        rows: 40,
+        columns: 50,
+        mePos: 898,
+        keys: {
+          UP: 38,
+          DOWN: 40,
+          LEFT: 37,
+          RIGHT: 39
+        },
+        events: {
+          onkeydown: function(e) {
+            var keyCode = (e || window.event).keyCode;
+            switch(keyCode) {
+              case World.keys.UP: {
+                if (World.mePos >= World.columns)
+                  World.moveMeToNewPosition(World.mePos-World.columns);
+                break;
+              };
+              case World.keys.DOWN: {
+                if (World.mePos < World.rows*World.columns-World.columns)
+                  World.moveMeToNewPosition(World.mePos+World.columns);
+                break;
+              };
+              case World.keys.LEFT: {
+                if (World.calculatePosX(World.mePos) > 0)
+                  World.moveMeToNewPosition(World.mePos-1);
+                break;
+              };
+              case World.keys.RIGHT: {
+                if (World.calculatePosX(World.mePos) < World.columns-1)
+                  World.moveMeToNewPosition(World.mePos+1);
+                break;
+              };
+            }
+          }
+        },
+
+        init: function() {
+          // init events
+          window.onkeydown = World.events.onkeydown;
+
+          var terrainEl = document.createElement('div');
+          terrainEl.id = 'terrain';
+          document.body.appendChild(terrainEl);
+
+          var pos = World.calculatePos(World.mePos);
+
+          for (var i=0; i<World.rows; i++) {
+            var lineEl = document.createElement('div');
+            terrainEl.appendChild(lineEl);
+            for (var j=0; j<World.columns; j++) {
+              var cellEl = document.createElement('div');
+
+              if (i==7 && j==48) cellEl.innerHTML = '&#x1F601';
+              if (i==30 && j==25) cellEl.innerHTML = '&#x1F474';
+              if (i==pos[0] && j==pos[1]) cellEl.className = cellEl.className + ' me ';
+
+              lineEl.appendChild(cellEl);
+            }
+          }
+        },
+        calculatePosX: function(linearPos) {
+          return linearPos % World.columns;
+        },
+        calculatePosY: function(linearPos) {
+          return Math.floor(linearPos / World.columns);
+        },
+        calculatePos: function(linearPos) {
+          return [World.calculatePosY(linearPos), World.calculatePosX(linearPos)];
+        },
+        moveMeToNewPosition: function(newLinearPos) {
+          var meEl = document.querySelector('.me');
+          meEl.className = meEl.className.replace(' me ', '');
+
+          World.mePos = newLinearPos;
+          var newPos = World.calculatePos(World.mePos);
+
+          var newX = newPos[1]+1;
+          var newY = newPos[0]+1;
+          var meEl = document.querySelector('#terrain div:nth-child('+newY+') div:nth-child('+newX+')');
+          meEl.className = meEl.className + ' me ';
+        }
+      }
+    </script>
+  </head>
+  <body>
+  </body>
+  <script>
+    World.init();
+  </script>
+</html>
