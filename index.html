@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <title>Thrive</title>
     <style>
       #terrain {
-        width: 1000px;
+        width: 1050px;
         border-top: solid 1px #80B080;
         border-left: solid 1px #80B080;
         -webkit-background-clip: padding-box; /* for Safari */
@@ -48,6 +49,9 @@
           LEFT: 37,
           RIGHT: 39
         },
+        statuses: {
+          rest: false
+        },
         events: {
           onkeydown: function(e) {
             var keyCode = (e || window.event).keyCode;
@@ -73,12 +77,28 @@
                 break;
               };
             }
+          },
+          onRestActionClick: function() {
+            World.statuses.rest = true;
+            var intervalId = setInterval(() => {
+              if (World.getEnergy() < 100)
+                return World.changeEnergy(1);
+              clearInterval(intervalId);
+            }, 1000);
+          },
+          onBuildActionClick: function() {
+            document.querySelectorAll('#normalActions > button').forEach(b=>b.disabled = true);
+            document.getElementById('buildActions').hidden = false;
+          },
+          onBuildCancelActionClick: function() {
+            document.querySelectorAll('#normalActions > button').forEach(b=>b.disabled = false);
+            document.getElementById('buildActions').hidden = true;
           }
         },
 
         init: function() {
           // init events
-          window.onkeydown = World.events.onkeydown;
+          World.initEvents();
 
           var terrainEl = document.createElement('div');
           terrainEl.id = 'terrain';
@@ -100,6 +120,24 @@
             }
           }
         },
+        initEvents: function() {
+          window.onkeydown = World.events.onkeydown;
+          document.getElementById('restAction').onclick = World.events.onRestActionClick;
+          document.getElementById('attackAction').onclick = World.events.onAttackActionClick;
+          document.getElementById('pickAction').onclick = World.events.onPickActionClick;
+          document.getElementById('buildAction').onclick = World.events.onBuildActionClick;
+          document.getElementById('takeAction').onclick = World.events.onTakeActionClick;
+          document.getElementById('destroyAction').onclick = World.events.onDestroyActionClick;
+
+          document.getElementById('buildWallAction').onclick = World.events.onBuildWallActionClick;
+          document.getElementById('buildGateAction').onclick = World.events.onBuildGateActionClick;
+          document.getElementById('buildStreetAction').onclick = World.events.onbuBldStreetActionClick;
+          document.getElementById('buildHouseAction').onclick = World.events.onbBildHouseActionClick;
+          document.getElementById('buildHospitalAction').onclick = World.events.onbuilBHospitalActionClick;
+          document.getElementById('buildSchoolAction').onclick = World.events.onbuBldSchoolActionClick;
+          document.getElementById('buildBankAction').onclick = World.events.onBuildBankActionClick;
+          document.getElementById('buildCancelAction').onclick = World.events.onBuildCancelActionClick;
+        },
         calculatePosX: function(linearPos) {
           return linearPos % World.columns;
         },
@@ -110,6 +148,11 @@
           return [World.calculatePosY(linearPos), World.calculatePosX(linearPos)];
         },
         moveMeToNewPosition: function(newLinearPos) {
+          if (World.getEnergy() == 0) {
+            alert('you don\'t have energy, please rest.');
+            return;
+          }
+
           var meEl = document.querySelector('.me');
           meEl.className = meEl.className.replace(' me ', '');
 
@@ -120,11 +163,34 @@
           var newY = newPos[0]+1;
           var meEl = document.querySelector('#terrain div:nth-child('+newY+') div:nth-child('+newX+')');
           meEl.className = meEl.className + ' me ';
+
+          World.changeEnergy(-1);
+        },
+        getEnergy: function() {
+          var energy = document.getElementById('energy');
+          var energyValue = parseInt(energy.innerHTML);
+
+          return energyValue;
+        },
+        changeEnergy: function(amount) {
+          var energy = document.getElementById('energy');
+          var energyValue = parseInt(energy.innerHTML);
+
+          var newEnergyValue = (energyValue + amount);
+          if (energyValue + amount < 0)
+            newEnergyValue = 0;
+
+          energy.innerHTML = newEnergyValue;
+          if (newEnergyValue == 0) alert('you don\'t have energy, please rest.');
         }
       }
     </script>
   </head>
   <body>
+    <div><span>Life: <span id="life">100</span>%</span>&nbsp;<span>Energy: <span id="energy">100</span>%</span>&nbsp;<span>Money: $<span id="money">100</span></span></div>
+    <div id="normalActions">Actions: <button id="restAction">rest</button>&nbsp;<button id="attackAction">attack</button>&nbsp;<button id="pickAction">pick</button>&nbsp;<button id="buildAction">build</button>&nbsp;<button id="takeAction">take</button>&nbsp;<button id="destroyAction">destroy</button></div>
+    <div id="buildActions" hidden>Build actions: <button id="buildWallAction">wall</button>&nbsp;<button id="buildGateAction">gate</button>&nbsp;<button id="buildStreetAction">street</button>&nbsp;<button id="buildHouseAction">house</button>&nbsp;<button id="buildHospitalAction">hospital</button>&nbsp;<button id="buildSchoolAction">school</button>&nbsp;<button id="buildBankAction">bank</button>&nbsp;<button id="buildCancelAction">cancel</button></div>
+    <div>Status: <span id="status"></span></div>
   </body>
   <script>
     World.init();
