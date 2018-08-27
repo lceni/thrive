@@ -80,10 +80,17 @@
           },
           onRestActionClick: function() {
             World.statuses.rest = true;
+            document.getElementById('normalActions').hidden = true;
+            document.getElementById('restActions').hidden = false;
+
             var intervalId = setInterval(() => {
-              if (World.getEnergy() < 100)
+              if (World.statuses.rest && World.getEnergy() < 100)
                 return World.changeEnergy(1);
+
               clearInterval(intervalId);
+              World.statuses.rest = false;
+              document.getElementById('normalActions').hidden = false;
+              document.getElementById('restActions').hidden = true;
             }, 1000);
           },
           onBuildActionClick: function() {
@@ -93,6 +100,11 @@
           onBuildCancelActionClick: function() {
             document.querySelectorAll('#normalActions > button').forEach(b=>b.disabled = false);
             document.getElementById('buildActions').hidden = true;
+          },
+          onRestCancelActionClick: function() {
+            World.statuses.rest = false;
+            document.getElementById('normalActions').hidden = false;
+            document.getElementById('restActions').hidden = true;
           }
         },
 
@@ -137,6 +149,8 @@
           document.getElementById('buildSchoolAction').onclick = World.events.onbuBldSchoolActionClick;
           document.getElementById('buildBankAction').onclick = World.events.onBuildBankActionClick;
           document.getElementById('buildCancelAction').onclick = World.events.onBuildCancelActionClick;
+
+          document.getElementById('restCancelAction').onclick = World.events.onRestCancelActionClick;
         },
         calculatePosX: function(linearPos) {
           return linearPos % World.columns;
@@ -150,6 +164,11 @@
         moveMeToNewPosition: function(newLinearPos) {
           if (World.getEnergy() == 0) {
             alert('you don\'t have energy, please rest.');
+            return;
+          }
+
+          if (World.statuses.rest) {
+            alert('you are in rest, please wait or cancel.');
             return;
           }
 
@@ -190,6 +209,7 @@
     <div><span>Life: <span id="life">100</span>%</span>&nbsp;<span>Energy: <span id="energy">100</span>%</span>&nbsp;<span>Money: $<span id="money">100</span></span></div>
     <div id="normalActions">Actions: <button id="restAction">rest</button>&nbsp;<button id="attackAction">attack</button>&nbsp;<button id="pickAction">pick</button>&nbsp;<button id="buildAction">build</button>&nbsp;<button id="takeAction">take</button>&nbsp;<button id="destroyAction">destroy</button></div>
     <div id="buildActions" hidden>Build actions: <button id="buildWallAction">wall</button>&nbsp;<button id="buildGateAction">gate</button>&nbsp;<button id="buildStreetAction">street</button>&nbsp;<button id="buildHouseAction">house</button>&nbsp;<button id="buildHospitalAction">hospital</button>&nbsp;<button id="buildSchoolAction">school</button>&nbsp;<button id="buildBankAction">bank</button>&nbsp;<button id="buildCancelAction">cancel</button></div>
+    <div id="restActions" hidden>Rest actions: <button id="restCancelAction">cancel</button></div>
     <div>Status: <span id="status"></span></div>
   </body>
   <script>
