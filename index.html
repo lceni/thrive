@@ -118,11 +118,15 @@
 
           var pos = World.calculatePos(World.mePos);
 
+          var possibleEmoji = ['&#x1F480', '&#x1F6AA', '&#x1F3E0', '&#x1F3E5', '&#x1F480', '&#x1F480', '&#x1F480', '&#x1F480', '&#x1F480', '&#x1F480', '&#x1F480', '&#x1F480', '&#x1F480', '&#x1F480', '&#x1F480'];
+
           for (var i=0; i<World.rows; i++) {
             var lineEl = document.createElement('div');
             terrainEl.appendChild(lineEl);
             for (var j=0; j<World.columns; j++) {
               var cellEl = document.createElement('div');
+
+              if (i==0 && possibleEmoji[j]) cellEl.innerHTML = possibleEmoji[j];
 
               if (i==7 && j==48) cellEl.innerHTML = '&#x1F601';
               if (i==30 && j==25) cellEl.innerHTML = '&#x1F474';
